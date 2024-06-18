@@ -5,7 +5,6 @@ body {
 	align-items: start;
 	justify-content: center;
 	overflow: hidden;
-	background-image: url('./wavy-lines.svg');
 	background-size: cover;
 	user-select: none;
 	width: 100vw;
@@ -136,7 +135,7 @@ code {
  .react-tabs__tab-panel {
 	display: none; /* Hide all tab panels by default */
 	flex: 1; /* Let them grow to fill available space */
-	height: calc(100vh - 41px);
+	height: calc(100% - 41px);
 	background: #000;
 	border: 1px solid #fff;
 	border-top: none;
