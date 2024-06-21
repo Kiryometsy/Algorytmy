@@ -1,15 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 //import PropTypes from 'prop-types'
 
 const Komiwojażer = () => {
 	const [NOfCities, setNOfCities] = useState(4)
 	const [tries, setTries] = useState(50)
 	const [calculating, setCalculating] = useState(false)
-	const [wynik, setWynik] = useState('')
+	const [tableGenerated, setTableGenerated] = useState(true)
 	const [minRoadValue, setMinRoadValue] = useState(1) // Default min road value
 	const [maxRoadValue, setMaxRoadValue] = useState(100) // Default max road value
-	//const [currentOrder, setCurrentOrder] = useState([])
-	const Values = []
+	const [Values, setValues] = useState([])
+
+	useEffect(() => {
+		if (Values.length > 0) {
+			ShowValues()
+		}
+	}, [Values])
 
 	const handleNOfCitiesChange = (e) => {
 		let value = parseInt(e.target.value)
@@ -52,8 +57,9 @@ const Komiwojażer = () => {
 	}
 
 	function RandomRoads() {
+		let tempValues = []
 		for (let i = 0; i < NOfCities; i++) {
-			Values[i] = []
+			tempValues[i] = []
 		}
 		if (NOfCities == 0 || isNaN(NOfCities)) {
 			console.log('Liczba miast jest 0!!')
@@ -61,27 +67,58 @@ const Komiwojażer = () => {
 			for (let i = 0; i < NOfCities; i++) {
 				for (let j = 0; j < NOfCities; j++) {
 					if (j == i) {
-						Values[i][j] = 0
+						tempValues[i][j] = 0
 					} else if (j < i) {
 						continue
 					} else {
 						let temp = getRandomInt(minRoadValue, maxRoadValue)
-						Values[i][j] = temp
-						Values[j][i] = temp
+						tempValues[i][j] = temp
+						tempValues[j][i] = temp
 					}
 				}
 			}
 		}
-		ShowValues()
-	}
 
+		setValues(tempValues)
+
+		setTableGenerated(false)
+		//ShowValues()
+	}
 	function ShowValues() {
+		const table = document.getElementById('ToShowValues')
+		let thed = document.createElement('tr')
+
 		for (let i = 0; i < NOfCities; i++) {
-			let napis = ''
-			for (let j = 0; j < NOfCities; j++) {
-				napis += Values[i][j] + '-'
+			if (i == 0) {
+				let tempElement = document.createElement('th')
+				tempElement.innerText = '0'
+				thed.appendChild(tempElement)
 			}
-			console.log(napis)
+			let tempElement = document.createElement('th')
+			tempElement.innerText = i + 1
+			thed.appendChild(tempElement)
+		}
+		table.replaceChildren(thed)
+
+		for (let i = 0; i < NOfCities; i++) {
+			let tempRow = document.createElement('tr')
+			for (let j = 0; j < NOfCities; j++) {
+				if (j == 0) {
+					let tempElement = document.createElement('td')
+					tempElement.innerText = i + 1
+					tempRow.appendChild(tempElement)
+				}
+				if (j < i) {
+					let tempElement = document.createElement('td')
+					tempElement.innerText = '-'
+					tempRow.appendChild(tempElement)
+				} else {
+					let tempElement = document.createElement('td')
+					tempElement.innerText = Values[i][j]
+					tempRow.appendChild(tempElement)
+				}
+			}
+			table.appendChild(tempRow)
 		}
 	}
 
@@ -114,7 +151,7 @@ const Komiwojażer = () => {
 			let cityB = order[i + 1]
 
 			// Adjust indices since order[i] is 1-based and roadValues is 0-based
-			//console.log(order + '-order')
+			//console.log(Values)
 			//console.log(cityA + '-' + cityB + ' ordery w sumowaniu' + Values)
 			let roadValue = Values[cityA - 1][cityB - 1]
 			sum += roadValue
@@ -124,7 +161,8 @@ const Komiwojażer = () => {
 	}
 
 	function ShiftOrder(order) {
-		let leng = order.length - 1
+		let Order = order
+		let leng = Order.length - 1
 		let temp1 = getRandomInt(0, leng)
 		let temp2 = getRandomInt(0, leng)
 
@@ -136,9 +174,9 @@ const Komiwojażer = () => {
 		//console.log('1 warotść-' + temp1 + ' 2 wartość-' + temp2)
 
 		// Swap elements at temp1 and temp2
-		let tempOrderVal = order[temp1]
-		order[temp1] = order[temp2]
-		order[temp2] = tempOrderVal
+		let tempOrderVal = Order[temp1]
+		Order[temp1] = Order[temp2]
+		Order[temp2] = tempOrderVal
 
 		// Ensure temp4 and temp5 are different and not equal to temp1
 		let temp4 = getRandomInt(0, leng)
@@ -150,102 +188,115 @@ const Komiwojażer = () => {
 		}
 		//console.log('4 warotść-' + temp4 + ' 5 wartość-' + temp5)
 		// Swap elements at temp4 and temp5
-		tempOrderVal = order[temp4]
-		order[temp4] = order[temp5]
-		order[temp5] = tempOrderVal
+		tempOrderVal = Order[temp4]
+		Order[temp4] = Order[temp5]
+		Order[temp5] = tempOrderVal
 
-		return order
+		return Order
 	}
 
 	const Start = () => {
-		setWynik('Obliczanie...')
+		if (!Values || Values.length === 0) {
+			console.log('Values is not properly initialized')
+			return
+		}
+		//setWynik('Obliczanie...')
 		setCalculating(true) // Set calculating to true
+
 		let order = InitOrder()
+
 		//console.log(order + ' z inita')
 		for (let i = 0; i < tries; i++) {
-			let temp = ShiftOrder(order)
-			//console.log(order + ' z losowania')
-			if (sumOfRoadValues(temp) < sumOfRoadValues(order)) {
-				order = [...temp]
+			let temp = ShiftOrder([...order])
+			let tempRoad = sumOfRoadValues(temp)
+			let orderRoad = sumOfRoadValues(order)
+
+			if (tempRoad < orderRoad) {
+				order = temp
 			}
 		}
 
-		//setCurrentOrder(order)
-		//console.log(currentOrder)
-		document.getElementById('tt').innerText = order + ' -- ' + sumOfRoadValues(order)
+		let nap = ''
+		for (let i = 0; i < order.length; i++) {
+			nap += order[i]
+			if (i < order.length - 1) {
+				nap += '->'
+			}
+		}
+
+		let res = ' '
+		for (let i = 0; i < order.length - 1; i++) {
+			res += Values[i][i + 1]
+			if (i < order.length - 2) {
+				res += '+'
+			}
+		}
+		res += '=' + sumOfRoadValues(order)
+		document.getElementById('tt').innerText = nap
+		document.getElementById('t3').innerText = res
+
 		setCalculating(false)
+		//setWynik(sumOfRoadValues(order))
 	}
-	// const OrderAndSum = ({ currentOrder }) => {
-	// 	const sum = sumOfRoadValues(currentOrder)
-
-	// 	return (
-	// 		<div>
-	// 			<h3>Order of Cities:</h3>
-	// 			<ul>
-	// 				{currentOrder.map((city, index) => (
-	// 					<li key={index}>City {city}</li>
-	// 				))}
-	// 			</ul>
-	// 			<p>Total Sum of Road Values: {sum}</p>
-	// 		</div>
-	// 	)
-	// }
-
-	// OrderAndSum.propTypes = {
-	// 	currentOrder: PropTypes.array.isRequired // Ensure order is an array and is required
-	// }
 
 	return (
-		<div>
+		<div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
 			<h2>Komiwojażer</h2>
 			<div>
-				<label>Ilość Miast: </label>
-				<input
-					type="number"
-					value={NOfCities}
-					onChange={handleNOfCitiesChange}
-					min="2"
-					disabled={calculating} // Disable input when calculating
-				/>
-				<label>Ilość prób: </label>
-				<input
-					type="number"
-					value={tries}
-					onChange={handleTriesChange}
-					min="2"
-					disabled={calculating} // Disable input when calculating
-				/>
-				<label>Min. wartość drogi: </label>
-				<input
-					type="number"
-					value={minRoadValue}
-					onChange={handleMinRoadValueChange}
-					disabled={calculating}
-				/>
-				<label>Max. wartość drogi: </label>
-				<input
-					type="number"
-					value={maxRoadValue}
-					onChange={handleMaxRoadValueChange}
-					disabled={calculating}
-				/>
-				<button onClick={handleGenerateRandomRoads} disabled={calculating}>
-					Generuj Losowe Drogi
-				</button>
-				<button onClick={Start} disabled={calculating}>
-					Oblicz
-				</button>{' '}
-				{/* Disable button when calculating */}
-			</div>
-			<div>
-				<p id="tt"></p>
-			</div>
-			{/* {currentOrder.length > 0 && (
 				<div>
-					<OrderAndSum currentOrder={currentOrder} />
+					<div>
+						<label>Ilość Miast: </label>
+						<input
+							type="number"
+							value={NOfCities}
+							onChange={handleNOfCitiesChange}
+							min="2"
+							// disabled={calculating} // Disable input when calculating
+						/>
+						<br />
+						<label>Min. wartość drogi: </label>
+						<input
+							type="number"
+							value={minRoadValue}
+							onChange={handleMinRoadValueChange}
+							disabled={calculating}
+						/>
+						<br />
+						<label>Max. wartość drogi: </label>
+						<input
+							type="number"
+							value={maxRoadValue}
+							onChange={handleMaxRoadValueChange}
+							disabled={calculating}
+						/>
+						<br />
+						<button onClick={handleGenerateRandomRoads}>Generuj Losowe Drogi</button>
+					</div>
 				</div>
-			)} */}
-			<p>{wynik}</p>
+				<div style={{ marginTop: '10%' }}>
+					<label>Ilość prób: </label>
+					<input
+						type="number"
+						value={tries}
+						onChange={handleTriesChange}
+						min="2"
+						disabled={calculating} // Disable input when calculating
+					/>
+					<button onClick={Start} disabled={calculating || tableGenerated}>
+						Oblicz
+					</button>{' '}
+					{/* Disable button when calculating */}
+					<br />
+					<p id="tt"></p>
+					<p id="t3"></p>
+				</div>
+				<div
+					id="forTable"
+					style={{ float: 'right', flex: '1', overflow: 'auto', width: '100%', height: '' }}
+				>
+					<table id="ToShowValues"></table>
+				</div>
+			</div>
 		</div>
 	)
 }

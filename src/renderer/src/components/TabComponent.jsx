@@ -10,7 +10,7 @@ const TabComponent = () => (
 	<Tabs disableUpDownKeys disableLeftRightKeys>
 		<TabList>
 			<Tab>Sito Eratostenesa</Tab>
-			<Tab>Monte Cralo</Tab>
+			<Tab>Monte Carlo</Tab>
 			<Tab>Równanie 3 stopnia</Tab>
 			<Tab>Równanie 5 stopnia</Tab>
 			<Tab>Komiwojażer</Tab>

@@ -1,93 +1,82 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-const PolynomialRootFinder = () => {
-	const [coefficients, setCoefficients] = useState({ a: 1, b: 0, c: 0, d: 0, e: 0, f: 0 })
-	const [result, setResult] = useState(null)
+const R3Stopnia = () => {
+	const [inputA, setInputA] = useState(0)
+	const [inputB, setInputB] = useState(0)
+	const [inputC, setInputC] = useState(0)
+	const [inputD, setInputD] = useState(0)
+	const [roots, setRoots] = useState([])
+	const [precision, setPrecision] = useState(6) // Initial precision set to 6 decimal places
+	const MAX_PRECISION = 12 // Maximum allowed precision
 
-	const handleChange = (event) => {
-		const { name, value } = event.target
-		setCoefficients({ ...coefficients, [name]: parseFloat(value) })
+	const solveCubicEquation = () => {
+		// Parse coefficients from input strings to numbers
+		const a = parseFloat(inputA === '' ? '0' : inputA)
+		const b = parseFloat(inputB === '' ? '0' : inputB)
+		const c = parseFloat(inputC === '' ? '0' : inputC)
+		const d = parseFloat(inputD === '' ? '0' : inputD)
+
+		// Calculate omega
+		const omega = -b / (3 * a)
+
+		// Calculate p and q
+		const p = (3 * a * omega ** 2 + 2 * b * omega + c) / a
+		const q = (a * omega ** 3 + b * omega ** 2 + c * omega + d) / a
+
+		// Calculate discriminant Delta
+		const Delta = (q / 2) ** 2 + (p / 3) ** 3
+
+		if (Delta > 0) {
+			// Case 1: Delta > 0 (one real root, two complex conjugate roots)
+			const sqrtDelta = Math.sqrt(Delta)
+			const u = Math.cbrt(-q / 2 + sqrtDelta)
+			const v = Math.cbrt(-q / 2 - sqrtDelta)
+			const realRoot = u + v + omega
+			setRoots([realRoot])
+		} else if (Delta < 0) {
+			// Case 2: Delta < 0 (three real roots)
+			const sqrtNegP = Math.sqrt(-p / 3)
+			const phi = Math.acos(((3 * q) / (2 * p)) * Math.sqrt(3 / -p))
+			const root1 = omega + 2 * sqrtNegP * Math.cos(phi / 3)
+			const root2 = omega + 2 * sqrtNegP * Math.cos((phi + 2 * Math.PI) / 3)
+			const root3 = omega + 2 * sqrtNegP * Math.cos((phi + 4 * Math.PI) / 3)
+			setRoots([root1, root2, root3])
+		} else {
+			// Case 3: Delta = 0 (one real root, two identical real roots)
+			const root1 = omega + 2 * Math.cbrt(q / 2)
+			const root2 = omega - Math.cbrt(q / 2)
+			setRoots([root1, root2, root2])
+		}
 	}
 
-	const calculateRoot = () => {
-		const { a, b, c, d, e, f } = coefficients
-		const epsilon = 0.000001
-		let min = -100
-		let max = 100
-		const step = 0.01
+	// useEffect to trigger solveCubicEquation whenever any input changes
+	useEffect(() => {
+		solveCubicEquation()
+	}, [inputA, inputB, inputC, inputD])
 
-		const func = (x) =>
-			a * Math.pow(x, 5) +
-			b * Math.pow(x, 4) +
-			c * Math.pow(x, 3) +
-			d * Math.pow(x, 2) +
-			e * x +
-			f
-
-		let root = null
-		for (let x = min; x < max; x += step) {
-			if (func(x) * func(x + step) < 0) {
-				// Narrow down the root interval
-				let x0 = x
-				let x1 = x + step
-				while (Math.abs(func((x0 + x1) / 2)) > epsilon) {
-					const xMid = (x0 + x1) / 2
-					if (func(x0) * func(xMid) < 0) {
-						x1 = xMid
-					} else {
-						x0 = xMid
-					}
-				}
-				root = (x0 + x1) / 2
-				break
-			}
+	// Handler for changing precision
+	const handlePrecisionChange = (e) => {
+		const newPrecision = parseInt(e.target.value)
+		if (!isNaN(newPrecision) && newPrecision >= 0 && newPrecision <= MAX_PRECISION) {
+			setPrecision(newPrecision)
+		} else if (!isNaN(newPrecision) && newPrecision > MAX_PRECISION) {
+			setPrecision(MAX_PRECISION) // Cap precision to MAX_PRECISION if exceeded
 		}
-
-		setResult(root)
 	}
 
 	return (
 		<div>
-			<h2>Find Root of Polynomial</h2>
+			<h2>Równanie 3 stopnia</h2>
 			<div style={{ display: 'flex', alignItems: 'flex-end' }}>
 				<div style={{ textAlign: 'center', marginRight: '10px' }}>
 					<input
 						type="number"
-						name="a"
-						value={coefficients.a}
+						value={inputA}
 						placeholder="0"
-						onChange={handleChange}
+						onChange={(e) => setInputA(e.target.value)}
 						style={{ width: '50px' }}
 					/>
 					<div>a</div>
-				</div>
-				<div style={{ display: 'flex', alignItems: 'center', marginRight: '10px' }}>
-					<span>x⁵ +</span>
-				</div>
-				<div style={{ textAlign: 'center', marginRight: '10px' }}>
-					<input
-						type="number"
-						name="b"
-						value={coefficients.b}
-						placeholder="0"
-						onChange={handleChange}
-						style={{ width: '50px' }}
-					/>
-					<div>b</div>
-				</div>
-				<div style={{ display: 'flex', alignItems: 'center', marginRight: '10px' }}>
-					<span>x⁴ +</span>
-				</div>
-				<div style={{ textAlign: 'center', marginRight: '10px' }}>
-					<input
-						type="number"
-						name="c"
-						value={coefficients.c}
-						placeholder="0"
-						onChange={handleChange}
-						style={{ width: '50px' }}
-					/>
-					<div>c</div>
 				</div>
 				<div style={{ display: 'flex', alignItems: 'center', marginRight: '10px' }}>
 					<span>x³ +</span>
@@ -95,13 +84,12 @@ const PolynomialRootFinder = () => {
 				<div style={{ textAlign: 'center', marginRight: '10px' }}>
 					<input
 						type="number"
-						name="d"
-						value={coefficients.d}
+						value={inputB}
 						placeholder="0"
-						onChange={handleChange}
+						onChange={(e) => setInputB(e.target.value)}
 						style={{ width: '50px' }}
 					/>
-					<div>d</div>
+					<div>b</div>
 				</div>
 				<div style={{ display: 'flex', alignItems: 'center', marginRight: '10px' }}>
 					<span>x² +</span>
@@ -109,13 +97,12 @@ const PolynomialRootFinder = () => {
 				<div style={{ textAlign: 'center', marginRight: '10px' }}>
 					<input
 						type="number"
-						name="e"
-						value={coefficients.e}
+						value={inputC}
 						placeholder="0"
-						onChange={handleChange}
+						onChange={(e) => setInputC(e.target.value)}
 						style={{ width: '50px' }}
 					/>
-					<div>e</div>
+					<div>c</div>
 				</div>
 				<div style={{ display: 'flex', alignItems: 'center', marginRight: '10px' }}>
 					<span>x +</span>
@@ -123,20 +110,41 @@ const PolynomialRootFinder = () => {
 				<div style={{ textAlign: 'center', marginRight: '10px' }}>
 					<input
 						type="number"
-						name="f"
-						value={coefficients.f}
+						value={inputD}
 						placeholder="0"
-						onChange={handleChange}
+						onChange={(e) => setInputD(e.target.value)}
 						style={{ width: '50px' }}
 					/>
-					<div>f</div>
+					<div>d</div>
 				</div>
 				<div> = 0</div>
 			</div>
-			<button onClick={calculateRoot}>Calculate Root</button>
-			{result !== null && <p>Root: {result}</p>}
+			<div>
+				<h4>Ilość miejsc po przecinku:</h4>
+				<input
+					type="number"
+					value={precision}
+					onChange={handlePrecisionChange}
+					style={{ width: '50px' }}
+				/>
+				<div>
+					{roots.length > 0 && (
+						<div>
+							<h3>Miejsca Zerowe:</h3>
+							<ul>
+								{roots.map((root, index) => (
+									<li key={index}>
+										x<sub style={{ fontSize: '0.6em' }}>{index + 1}</sub> ={' '}
+										{Number.isInteger(root) ? root.toFixed(0) : root.toFixed(precision)}
+									</li>
+								))}
+							</ul>
+						</div>
+					)}
+				</div>
+			</div>
 		</div>
 	)
 }
 
-export default PolynomialRootFinder
+export default R3Stopnia
