@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 //import PropTypes from 'prop-types'
 
 const Komiwojażer = () => {
 	const [NOfCities, setNOfCities] = useState(4)
 	const [tries, setTries] = useState(50)
 	const [calculating, setCalculating] = useState(false)
+	const [tableGenerated, setTableGenerated] = useState(true)
 	const [tableGenerated, setTableGenerated] = useState(true)
 	const [minRoadValue, setMinRoadValue] = useState(1) // Default min road value
 	const [maxRoadValue, setMaxRoadValue] = useState(100) // Default max road value
@@ -60,6 +62,7 @@ const Komiwojażer = () => {
 		let tempValues = []
 		for (let i = 0; i < NOfCities; i++) {
 			tempValues[i] = []
+			tempValues[i] = []
 		}
 		if (NOfCities == 0 || isNaN(NOfCities)) {
 			console.log('Liczba miast jest 0!!')
@@ -68,10 +71,13 @@ const Komiwojażer = () => {
 				for (let j = 0; j < NOfCities; j++) {
 					if (j == i) {
 						tempValues[i][j] = 0
+						tempValues[i][j] = 0
 					} else if (j < i) {
 						continue
 					} else {
 						let temp = getRandomInt(minRoadValue, maxRoadValue)
+						tempValues[i][j] = temp
+						tempValues[j][i] = temp
 						tempValues[i][j] = temp
 						tempValues[j][i] = temp
 					}
@@ -120,6 +126,7 @@ const Komiwojażer = () => {
 			}
 			table.appendChild(tempRow)
 		}
+
 	}
 
 	function InitOrder() {
@@ -152,6 +159,7 @@ const Komiwojażer = () => {
 
 			// Adjust indices since order[i] is 1-based and roadValues is 0-based
 			//console.log(Values)
+			//console.log(Values)
 			//console.log(cityA + '-' + cityB + ' ordery w sumowaniu' + Values)
 			let roadValue = Values[cityA - 1][cityB - 1]
 			sum += roadValue
@@ -177,6 +185,9 @@ const Komiwojażer = () => {
 		let tempOrderVal = Order[temp1]
 		Order[temp1] = Order[temp2]
 		Order[temp2] = tempOrderVal
+		let tempOrderVal = Order[temp1]
+		Order[temp1] = Order[temp2]
+		Order[temp2] = tempOrderVal
 
 		// Ensure temp4 and temp5 are different and not equal to temp1
 		let temp4 = getRandomInt(0, leng)
@@ -191,7 +202,11 @@ const Komiwojażer = () => {
 		tempOrderVal = Order[temp4]
 		Order[temp4] = Order[temp5]
 		Order[temp5] = tempOrderVal
+		tempOrderVal = Order[temp4]
+		Order[temp4] = Order[temp5]
+		Order[temp5] = tempOrderVal
 
+		return Order
 		return Order
 	}
 
@@ -203,7 +218,9 @@ const Komiwojażer = () => {
 		//setWynik('Obliczanie...')
 		setCalculating(true) // Set calculating to true
 
+
 		let order = InitOrder()
+
 
 		//console.log(order + ' z inita')
 		for (let i = 0; i < tries; i++) {
@@ -236,6 +253,8 @@ const Komiwojażer = () => {
 		document.getElementById('t3').innerText = res
 
 		setCalculating(false)
+		//setWynik(sumOfRoadValues(order))
+	}
 		//setWynik(sumOfRoadValues(order))
 	}
 

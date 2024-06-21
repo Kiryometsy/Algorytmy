@@ -146,6 +146,29 @@ code {
 .react-tabs__tab-panel--selected {
   display: block; /* Display the selected tab panel */
 }
+#forTable{
+	width:100%;
+}
+#ToShowValues{
+	padding-right:15px;
+	width:100%;
+
+}
+#ToShowValues>tr>th{
+	border: 1px solid white;
+	background-color: grey;
+	padding-right: 10px;
+	padding-left:10px;
+}
+#ToShowValues>tr>td{
+	border: 1px solid white;
+	background-color: grey;
+	padding-right: 10px;
+	padding-left:10px;
+}
+input{
+	width: 10%;
+}
 
 #forTable{
 	width:100%;
